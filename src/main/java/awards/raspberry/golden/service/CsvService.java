@@ -28,7 +28,8 @@ public class CsvService {
 
     public List<MovieEntity> createMovieListFromCsv(List<String> lines) {
         // Remove first line (header)
-        lines = lines.subList(1, lines.size()-1);
+        lines = lines.subList(1, lines.size());
+        logger.info("Ignorind first line (heading)");
 
         List<MovieEntity> movies = new ArrayList<>();
 
@@ -39,6 +40,8 @@ public class CsvService {
                 logger.warn("Invalid Line: {}! Missing semicolon!", lineNumber);
                 continue;
             }
+
+            logger.info("Reading line {}", lineNumber);
 
             String[] parts = line.split(";");
             MovieEntity movie = new MovieEntity();
