@@ -6,5 +6,5 @@ CREATE TABLE MOVIES (
     title VARCHAR(255) NOT NULL,
     studios VARCHAR(255) NOT NULL,
     producers VARCHAR(255) NOT NULL,
-    winner BOOLEAN DEFAULT FALSE
+    winner VARCHAR(3) NOT NULL
 );

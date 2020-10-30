@@ -23,14 +23,14 @@ public class MovieEntity {
     private String producers;
 
     @Column(name = "winner")
-    private Boolean winner;
+    private String winner;
 
     public MovieEntity() {
         this.year = 0;
         this.title = "";
         this.studios = "";
         this.producers = "";
-        this.winner = Boolean.FALSE;
+        this.winner = "";
     }
 
     public Integer getYear() {
@@ -65,11 +65,11 @@ public class MovieEntity {
         this.producers = producers;
     }
 
-    public Boolean getWinner() {
+    public String getWinner() {
         return winner;
     }
 
-    public void setWinner(Boolean winner) {
+    public void setWinner(String winner) {
         this.winner = winner;
     }
 

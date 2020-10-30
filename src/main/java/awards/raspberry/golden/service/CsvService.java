@@ -1,6 +1,7 @@
 package awards.raspberry.golden.service;
 
 import awards.raspberry.golden.entity.MovieEntity;
+import awards.raspberry.golden.utils.CsvUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,68 +30,55 @@ public class CsvService {
     MovieService movieService;
 
     public List<MovieEntity> createMovieListFromCsv(List<String> lines) {
+        final String header = lines.get(0);
+
+        final char separator = CsvUtils.findSeparator(header);
+        if (separator == ' ') {
+            throw new RuntimeException("Unable to get columns separator from first line!");
+        }
+
+        final String[] headers = CsvUtils.findColumns(header, separator);
+
         // Remove first line (header)
         lines = lines.subList(1, lines.size());
-        logger.info("Ignorind first line (heading)");
 
         List<MovieEntity> movies = new ArrayList<>();
 
         final String warnTemplate = "Unable to extract {} from line {}: {}";
         int lineNumber = 1;
         for (String line : lines) {
-            if (line.indexOf(';') == -1) {
+            if (line.indexOf(separator) == -1) {
                 logger.warn("Invalid Line: {}! Missing semicolon!", lineNumber);
                 continue;
             }
 
             logger.info("Reading line {}", lineNumber);
 
-            String[] parts = line.split(";");
+            String[] parts = CsvUtils.findColumns(line, separator);
             MovieEntity movie = new MovieEntity();
 
-            // Year
-            if (parts.length > 0) {
-                try {
-                    movie.setYear(Integer.parseInt(parts[0].trim()));
-                } catch (NumberFormatException | IndexOutOfBoundsException e) {
-                    logger.warn(warnTemplate, "Year", lineNumber, e.getMessage());
-                }
-            }
+            for (int i=0, len=parts.length; i<len; i++) {
+                String columnName = headers[i];
+                String value = parts[i];
 
-            // Title
-            if (parts.length > 1) {
-                try {
-                    movie.setTitle(parts[1].trim());
-                } catch (IndexOutOfBoundsException e) {
-                    logger.warn(warnTemplate, "Title", lineNumber, e.getMessage());
-                }
-            }
+                columnName = columnName.substring(0, 1).toUpperCase()
+                        + columnName.substring(1).toLowerCase();
 
-            // Studios
-            if (parts.length > 2) {
                 try {
-                    movie.setStudios(parts[2].trim());
-                } catch (IndexOutOfBoundsException e) {
-                    logger.warn(warnTemplate, "Studios", lineNumber, e.getMessage());
+                    Method method = MovieEntity.class.getMethod("set" + columnName, String.class);
+                    logger.info("Saving {} as String", columnName);
+                    method.invoke(movie, value);
+                    continue;
+                } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException ivk) {
+                    logger.warn("Unable to save: {} as a String", columnName);
                 }
-            }
 
-            // Producers
-            if (parts.length > 3) {
                 try {
-                    movie.setProducers(parts[3].trim());
-                } catch (IndexOutOfBoundsException e) {
-                    logger.warn(warnTemplate, "Producers", lineNumber, e.getMessage());
-                }
-            }
-
-            // Winner
-            if (parts.length > 4) {
-                try {
-                    String win = parts[4].trim();
-                    movie.setWinner(win.toUpperCase().equals("YES"));
-                } catch (IndexOutOfBoundsException e) {
-                    logger.warn(warnTemplate, "Winner", lineNumber, e.getMessage());
+                    Method method = MovieEntity.class.getMethod("set" + columnName, Integer.class);
+                    logger.info("Saving {} as Integer", columnName);
+                    method.invoke(movie, Integer.parseInt(value));
+                } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException ivk) {
+                    logger.warn("Unable to save: {} as a Integer", columnName);
                 }
             }
 
