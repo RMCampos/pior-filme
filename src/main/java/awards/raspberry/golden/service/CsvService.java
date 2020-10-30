@@ -1,6 +1,8 @@
 package awards.raspberry.golden.service;
 
 import awards.raspberry.golden.entity.MovieEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -12,12 +14,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 @Service
 public class CsvService {
 
-    private final Logger logger = Logger.getLogger(getClass().getName());
+    private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
     @Autowired
     ResourceLoader resourceLoader;
@@ -31,36 +32,51 @@ public class CsvService {
 
         List<MovieEntity> movies = new ArrayList<>();
 
+        final String warnTemplate = "Unable to extract {} from line {}: {}";
+        int lineNumber = 1;
         for (String line : lines) {
+            if (line.indexOf(';') == -1) {
+                logger.warn("Invalid Line: {}! Missing semicolon!", lineNumber);
+                continue;
+            }
+
             String[] parts = line.split(";");
             MovieEntity movie = new MovieEntity();
 
             // Year
-            try {
-                movie.setYear(Integer.parseInt(parts[0].trim()));
-            } catch (NumberFormatException | IndexOutOfBoundsException e) {
-                e.printStackTrace();
+            if (parts.length > 0) {
+                try {
+                    movie.setYear(Integer.parseInt(parts[0].trim()));
+                } catch (NumberFormatException | IndexOutOfBoundsException e) {
+                    logger.warn(warnTemplate, "Year", lineNumber, e.getMessage());
+                }
             }
 
             // Title
-            try {
-                movie.setTitle(parts[1].trim());
-            } catch (IndexOutOfBoundsException e) {
-                e.printStackTrace();
+            if (parts.length > 1) {
+                try {
+                    movie.setTitle(parts[1].trim());
+                } catch (IndexOutOfBoundsException e) {
+                    logger.warn(warnTemplate, "Title", lineNumber, e.getMessage());
+                }
             }
 
             // Studios
-            try {
-                movie.setStudios(parts[2].trim());
-            } catch (IndexOutOfBoundsException e) {
-                e.printStackTrace();
+            if (parts.length > 2) {
+                try {
+                    movie.setStudios(parts[2].trim());
+                } catch (IndexOutOfBoundsException e) {
+                    logger.warn(warnTemplate, "Studios", lineNumber, e.getMessage());
+                }
             }
 
             // Producers
-            try {
-                movie.setProducers(parts[3].trim());
-            } catch (IndexOutOfBoundsException e) {
-                e.printStackTrace();
+            if (parts.length > 3) {
+                try {
+                    movie.setProducers(parts[3].trim());
+                } catch (IndexOutOfBoundsException e) {
+                    logger.warn(warnTemplate, "Producers", lineNumber, e.getMessage());
+                }
             }
 
             // Winner
@@ -69,11 +85,12 @@ public class CsvService {
                     String win = parts[4].trim();
                     movie.setWinner(win.toUpperCase().equals("YES"));
                 } catch (IndexOutOfBoundsException e) {
-                    e.printStackTrace();
+                    logger.warn(warnTemplate, "Winner", lineNumber, e.getMessage());
                 }
             }
 
             movies.add(movie);
+            lineNumber += 1;
         }
 
         return movies;
