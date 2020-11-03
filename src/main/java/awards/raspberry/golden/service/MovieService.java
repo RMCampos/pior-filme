@@ -20,6 +20,8 @@ public class MovieService {
     }
 
     public MovieInterval getAwardsInterval() {
+        // ...
+        
         return new MovieInterval();
     }
 }

@@ -7,26 +7,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 
-import java.io.File;
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
 public class CsvService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass().getName());
-
-    @Autowired
-    ResourcePatternResolver resolver;
 
     @Autowired
     MovieService movieService;
@@ -92,10 +92,13 @@ public class CsvService {
 
     public void processMoviesFromResouce(Resource resource) {
         try {
-            logger.info("CSV File URI: " + resource.getURI());
-            File csvFile = new File(resource.getURI());
+            InputStream inputStream = resource.getInputStream();
+            BufferedInputStream reader = new BufferedInputStream(inputStream);
 
-            List<String> lines = Files.readAllLines(csvFile.toPath());
+            String content = new String(reader.readAllBytes(), StandardCharsets.UTF_8);
+
+            String[] linesArray = content.split("\r\n|\n");
+            List<String> lines = Arrays.asList(linesArray);
             logger.info("CSV Lines count: " + lines.size());
 
             List<MovieEntity> movies = createMovieListFromCsv(lines);
@@ -110,10 +113,15 @@ public class CsvService {
     @PostConstruct
     public void init() {
         try {
-            Resource[] resources = resolver.getResources("/*.csv");
+            ClassLoader cl = this.getClass().getClassLoader();
+            ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(cl);
+            Resource[] resources = resolver.getResources("classpath:/*.csv");
+            
+            logger.info("CSV files found: " + resources.length);
 
-            for (Resource res : resources) {
-                processMoviesFromResouce(res);
+            for (Resource resource : resources) {
+                logger.info("Process file: {}", resource.getFilename());
+                processMoviesFromResouce(resource);
             }
         } catch (IOException iex) {
             iex.printStackTrace();
