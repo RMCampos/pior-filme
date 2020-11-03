@@ -2,14 +2,16 @@ package awards.raspberry.golden.service;
 
 import awards.raspberry.golden.entity.MovieEntity;
 import awards.raspberry.golden.utils.CsvUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -24,7 +26,7 @@ public class CsvService {
     private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
     @Autowired
-    ResourceLoader resourceLoader;
+    ResourcePatternResolver resolver;
 
     @Autowired
     MovieService movieService;
@@ -44,7 +46,6 @@ public class CsvService {
 
         List<MovieEntity> movies = new ArrayList<>();
 
-        final String warnTemplate = "Unable to extract {} from line {}: {}";
         int lineNumber = 1;
         for (String line : lines) {
             if (line.indexOf(separator) == -1) {
@@ -92,8 +93,8 @@ public class CsvService {
     public void processMoviesFromResouce(Resource resource) {
         try {
             logger.info("CSV File URI: " + resource.getURI());
-
             File csvFile = new File(resource.getURI());
+
             List<String> lines = Files.readAllLines(csvFile.toPath());
             logger.info("CSV Lines count: " + lines.size());
 
@@ -108,7 +109,14 @@ public class CsvService {
 
     @PostConstruct
     public void init() {
-        Resource resource = resourceLoader.getResource("classpath:" + "movielist.csv");
-        processMoviesFromResouce(resource);
+        try {
+            Resource[] resources = resolver.getResources("/*.csv");
+
+            for (Resource res : resources) {
+                processMoviesFromResouce(res);
+            }
+        } catch (IOException iex) {
+            iex.printStackTrace();
+        }
     }
 }
