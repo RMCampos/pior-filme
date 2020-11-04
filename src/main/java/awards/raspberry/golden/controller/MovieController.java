@@ -20,10 +20,10 @@ public class MovieController {
     public ResponseEntity<MovieInterval> getCsvFile() {
         MovieInterval mi = movieService.getAwardsInterval();
 
-        if (mi != null) {
-            return new ResponseEntity<>(mi, HttpStatus.OK);
-        } else {
+        if (mi.empty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
+
+        return new ResponseEntity<>(mi, HttpStatus.OK);
     }
 }

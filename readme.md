@@ -14,15 +14,16 @@ You must put your CSV files at resources folder. You can use copyCSV.bat or copy
 - No persistence (H2 [in memory] database)
 
 ### Development requirements ###
-- JDK 11 (it works with open JDK)
+- JDK 11 (works with open JDK)
 - Maven
-- IntelliJ IDEA or VS Code 
+- IntelliJ IDEA or VS Code
 
 ### Tests ###
-- Unit tests: JUnit
-- Integration tests: ... 
-- Just call testIt.bat or testIt.sh
+- Framework: Mockito
+- Unit tests: Mock Bean
+- Integration tests: Mock MVC 
+- How to run: just call testIt.bat or ./testIt.sh
 
-### Running ###
-- JRE 11
-- Just call run.bat or run.sh
+### App Running ###
+- JRE 11 is required
+- Just call run.bat or ./run.sh

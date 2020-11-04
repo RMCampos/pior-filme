@@ -33,6 +33,10 @@ public class MovieInterval implements Serializable {
         this.minList = minList;
     }
 
+    public boolean empty() {
+        return minList.isEmpty() && maxList.isEmpty();
+    }
+
     @Override
     public String toString() {
         return "MovieInterval{}";
