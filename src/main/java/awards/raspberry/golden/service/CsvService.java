@@ -12,10 +12,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -89,17 +87,28 @@ public class CsvService {
 
     public void processResouceFile(Resource resource) {
         try {
-            InputStream inputStream = resource.getInputStream();
-            BufferedInputStream reader = new BufferedInputStream(inputStream);
+            final int bufferSize = 8 * 1024;
 
-            String content = new String(reader.readAllBytes(), StandardCharsets.UTF_8);
+            BufferedInputStream reader = new BufferedInputStream(
+                    resource.getInputStream(),
+                    bufferSize
+            );
 
-            String[] linesArray = content.split("\r\n|\n");
+            int i;
+            StringBuilder sb = new StringBuilder();
+
+            while ((i = reader.read()) != -1) {
+                sb.append((char) i);
+            }
+
+            String[] linesArray = sb.toString().split("\r\n|\n");
             List<String> lines = Arrays.asList(linesArray);
             logger.info("CSV Lines count: " + lines.size());
 
             List<MovieEntity> movies = createMovieListFromCsv(lines);
             logger.info("Movies count: " + movies.size());
+
+            reader.close();
 
             movieRepository.saveAll(movies);
         } catch (IOException ioex) {

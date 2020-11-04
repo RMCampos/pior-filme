@@ -1,10 +1,13 @@
 package awards.raspberry.golden.entity;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "MOVIES")
-public class MovieEntity {
+public class MovieEntity implements Serializable {
+
+    private static final long serialVersionUID = -5918268647791464051L;
 
     @Id
     @GeneratedValue

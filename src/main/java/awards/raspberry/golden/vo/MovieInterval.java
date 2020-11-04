@@ -1,7 +1,5 @@
 package awards.raspberry.golden.vo;
 
-import awards.raspberry.golden.entity.MovieEntity;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,10 +33,5 @@ public class MovieInterval implements Serializable {
 
     public boolean empty() {
         return minList.isEmpty() && maxList.isEmpty();
-    }
-
-    @Override
-    public String toString() {
-        return "MovieInterval{}";
     }
 }

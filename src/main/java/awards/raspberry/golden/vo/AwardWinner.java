@@ -1,7 +1,10 @@
 package awards.raspberry.golden.vo;
 
-public class AwardWinner {
+import java.io.Serializable;
 
+public class AwardWinner implements Serializable {
+
+    private static final long serialVersionUID = 157162745102289323L;
     private String producer;
     private int interval;
     private int previousWin;
