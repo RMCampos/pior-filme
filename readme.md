@@ -14,7 +14,7 @@ You must put your CSV files at resources folder. You can use copyCSV.bat or copy
 - No persistence (H2 [in memory] database)
 
 ### Development requirements ###
-- JDK 11 (works with open JDK)
+- JDK 8 (works with open JDK)
 - Maven
 - IntelliJ IDEA or VS Code
 
@@ -25,5 +25,5 @@ You must put your CSV files at resources folder. You can use copyCSV.bat or copy
 - How to run: just call testIt.bat or ./testIt.sh
 
 ### App Running ###
-- JRE 11 is required
+- JRE 8 is required
 - Just call run.bat or ./run.sh
