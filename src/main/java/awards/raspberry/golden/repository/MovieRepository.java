@@ -4,7 +4,10 @@ import awards.raspberry.golden.entity.MovieEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository
-public interface IMovieRepository extends JpaRepository<MovieEntity, Long> {
+import java.util.List;
 
+@Repository
+public interface MovieRepository extends JpaRepository<MovieEntity, Long> {
+
+    List<MovieEntity> findAllByWinner(String winner);
 }

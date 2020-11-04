@@ -1,17 +1,14 @@
 package awards.raspberry.golden.service;
 
 import awards.raspberry.golden.entity.MovieEntity;
+import awards.raspberry.golden.repository.MovieRepository;
 import awards.raspberry.golden.utils.CsvUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -29,7 +26,7 @@ public class CsvService {
     private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
     @Autowired
-    MovieService movieService;
+    MovieRepository movieRepository;
 
     public List<MovieEntity> createMovieListFromCsv(List<String> lines) {
         final String header = lines.get(0);
@@ -90,7 +87,7 @@ public class CsvService {
         return movies;
     }
 
-    public void processMoviesFromResouce(Resource resource) {
+    public void processResouceFile(Resource resource) {
         try {
             InputStream inputStream = resource.getInputStream();
             BufferedInputStream reader = new BufferedInputStream(inputStream);
@@ -104,27 +101,9 @@ public class CsvService {
             List<MovieEntity> movies = createMovieListFromCsv(lines);
             logger.info("Movies count: " + movies.size());
 
-            movieService.addMovies(movies);
+            movieRepository.saveAll(movies);
         } catch (IOException ioex) {
             ioex.printStackTrace();
-        }
-    }
-
-    @PostConstruct
-    public void init() {
-        try {
-            ClassLoader cl = this.getClass().getClassLoader();
-            ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(cl);
-            Resource[] resources = resolver.getResources("classpath:/*.csv");
-            
-            logger.info("CSV files found: " + resources.length);
-
-            for (Resource resource : resources) {
-                logger.info("Process file: {}", resource.getFilename());
-                processMoviesFromResouce(resource);
-            }
-        } catch (IOException iex) {
-            iex.printStackTrace();
         }
     }
 }

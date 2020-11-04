@@ -9,27 +9,32 @@ import java.util.List;
 public class MovieInterval implements Serializable {
 
     private static final long serialVersionUID = 1750443984749527201L;
-    private List<MovieEntity> min;
-    private List<MovieEntity> max;
+    private List<AwardWinner> minList;
+    private List<AwardWinner> maxList;
 
     public MovieInterval() {
-        this.min = new ArrayList<>();
-        this.max = new ArrayList<>();
+        this.minList = new ArrayList<>();
+        this.maxList = new ArrayList<>();
     }
 
-    public List<MovieEntity> getMin() {
-        return min;
+    public List<AwardWinner> getMaxList() {
+        return maxList;
     }
 
-    public void setMin(List<MovieEntity> min) {
-        this.min = min;
+    public void setMaxList(List<AwardWinner> maxList) {
+        this.maxList = maxList;
     }
 
-    public List<MovieEntity> getMax() {
-        return max;
+    public List<AwardWinner> getMinList() {
+        return minList;
     }
 
-    public void setMax(List<MovieEntity> max) {
-        this.max = max;
+    public void setMinList(List<AwardWinner> minList) {
+        this.minList = minList;
+    }
+
+    @Override
+    public String toString() {
+        return "MovieInterval{}";
     }
 }
