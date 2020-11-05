@@ -2,6 +2,7 @@ package awards.raspberry.golden.service;
 
 import awards.raspberry.golden.entity.MovieEntity;
 import awards.raspberry.golden.repository.MovieRepository;
+import awards.raspberry.golden.utils.CsvUtils;
 import awards.raspberry.golden.vo.AwardWinner;
 import awards.raspberry.golden.vo.MovieInterval;
 import org.slf4j.Logger;
@@ -9,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 
@@ -21,7 +24,13 @@ public class MovieService {
     MovieRepository movieRepository;
 
     public MovieInterval getAwardsInterval() {
-        final List<MovieEntity> movieEntityList = movieRepository.findAllByWinner("yes");
+        return getAwardsInterval(null);
+    }
+
+    public MovieInterval getAwardsInterval(List<MovieEntity> movieEntityList) {
+        if (movieEntityList == null) {
+            movieEntityList = movieRepository.findAllByWinner("yes");
+        }
 
         if (movieEntityList.isEmpty()) {
             logger.info("No winner producer!");
@@ -101,5 +110,59 @@ public class MovieService {
         }
 
         return mi;
+    }
+
+    public List<MovieEntity> createMovieListFromCsv(List<String> lines) {
+        final String header = lines.get(0);
+
+        final char separator = CsvUtils.findSeparator(header);
+        if (separator == ' ') {
+            throw new RuntimeException("Unable to get columns separator from first line!");
+        }
+
+        final String[] headers = CsvUtils.findColumns(header, separator);
+
+        // Remove first line (header)
+        lines = lines.subList(1, lines.size());
+
+        List<MovieEntity> movies = new ArrayList<>();
+
+        int lineNumber = 1;
+        for (String line : lines) {
+            if (line.indexOf(separator) == -1) {
+                logger.warn("Invalid Line: {}! Missing semicolon!", lineNumber);
+                continue;
+            }
+
+            logger.info("Reading line {}", lineNumber);
+
+            String[] parts = CsvUtils.findColumns(line, separator);
+            MovieEntity movie = new MovieEntity();
+
+            for (int i=0, len=parts.length; i<len; i++) {
+                String columnName = headers[i];
+                String value = parts[i];
+
+                columnName = columnName.substring(0, 1).toUpperCase()
+                        + columnName.substring(1).toLowerCase();
+
+                try {
+                    Method method = MovieEntity.class.getMethod("set" + columnName, String.class);
+                    method.invoke(movie, value);
+                } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException ivk) {
+                    try {
+                        Method method = MovieEntity.class.getMethod("set" + columnName, Integer.class);
+                        method.invoke(movie, Integer.parseInt(value));
+                    } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException noex) {
+                        noex.printStackTrace();
+                    }
+                }
+            }
+
+            movies.add(movie);
+            lineNumber += 1;
+        }
+
+        return movies;
     }
 }

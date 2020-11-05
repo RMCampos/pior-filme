@@ -18,7 +18,7 @@ public class MovieController {
     MovieService movieService;
 
     @GetMapping(value = "/awards-interval", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<MovieInterval> getCsvFile() {
+    public ResponseEntity<MovieInterval> getAwardsInterval() {
         MovieInterval mi = movieService.getAwardsInterval();
 
         if (mi.empty()) {

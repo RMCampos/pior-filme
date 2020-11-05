@@ -25,7 +25,7 @@ import java.util.List;
 public class CsvServiceTest {
 
     @Autowired
-    CsvService csvService;
+    MovieService movieService;
 
     @MockBean
     MovieRepository movieRepository;
@@ -33,8 +33,8 @@ public class CsvServiceTest {
     @TestConfiguration
     static class CsvServiceTestConfiguration {
         @Bean
-        public CsvService csvService() {
-            return new CsvService();
+        public MovieService movieService() {
+            return new MovieService();
         }
     }
 
@@ -57,7 +57,7 @@ public class CsvServiceTest {
                 "2020;Name;Studio here;Ricardo Campos;yes"
         };
 
-        List<MovieEntity> movieEntities = csvService.createMovieListFromCsv(
+        List<MovieEntity> movieEntities = movieService.createMovieListFromCsv(
                 Arrays.asList(lines)
         );
 
@@ -78,7 +78,7 @@ public class CsvServiceTest {
                 "Name;2020;Studio here;Ricardo Campos;yes"
         };
 
-        List<MovieEntity> movieEntities = csvService.createMovieListFromCsv(
+        List<MovieEntity> movieEntities = movieService.createMovieListFromCsv(
                 Arrays.asList(lines)
         );
 
