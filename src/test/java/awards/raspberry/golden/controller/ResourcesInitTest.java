@@ -1,14 +1,10 @@
 package awards.raspberry.golden.controller;
 
 import awards.raspberry.golden.entity.MovieEntity;
-import awards.raspberry.golden.init.ResourcesInit;
-import awards.raspberry.golden.repository.MovieRepository;
 import awards.raspberry.golden.service.CsvService;
 import awards.raspberry.golden.service.MovieService;
-import awards.raspberry.golden.vo.AwardWinner;
 import awards.raspberry.golden.vo.MovieInterval;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -72,12 +68,12 @@ public class ResourcesInitTest {
 
         MovieInterval movieResponse = parseJson(mvcResult.getResponse().getContentAsString());
         Assert.assertFalse(movieResponse.empty());
-        Assert.assertEquals(2, movieResponse.getMinList().size());
-        Assert.assertEquals(6, movieResponse.getMinList().get(0).getInterval());
-        Assert.assertEquals("Bo Derek", movieResponse.getMinList().get(0).getProducer());
-        Assert.assertEquals(2, movieResponse.getMaxList().size());
-        Assert.assertEquals(6, movieResponse.getMaxList().get(0).getInterval());
-        Assert.assertEquals("Bo Derek", movieResponse.getMaxList().get(0).getProducer());
+        Assert.assertEquals(1, movieResponse.getMinList().size());
+        Assert.assertEquals(1, movieResponse.getMinList().get(0).getInterval());
+        Assert.assertEquals("Joel Silver", movieResponse.getMinList().get(0).getProducer());
+        Assert.assertEquals(1, movieResponse.getMaxList().size());
+        Assert.assertEquals(13, movieResponse.getMaxList().get(0).getInterval());
+        Assert.assertEquals("Matthew Vaughn", movieResponse.getMaxList().get(0).getProducer());
     }
 
     private List<String> obterLinhasCsv() {

@@ -1,6 +1,7 @@
 package awards.raspberry.golden.vo;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class AwardWinner implements Serializable {
 
@@ -47,5 +48,21 @@ public class AwardWinner implements Serializable {
 
     public void setFollowingWin(int followingWin) {
         this.followingWin = followingWin;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AwardWinner that = (AwardWinner) o;
+        return interval == that.interval &&
+                previousWin == that.previousWin &&
+                followingWin == that.followingWin &&
+                producer.equals(that.producer);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(producer, interval, previousWin, followingWin);
     }
 }

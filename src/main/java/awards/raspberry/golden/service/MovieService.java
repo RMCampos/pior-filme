@@ -3,6 +3,7 @@ package awards.raspberry.golden.service;
 import awards.raspberry.golden.entity.MovieEntity;
 import awards.raspberry.golden.repository.MovieRepository;
 import awards.raspberry.golden.utils.CsvUtils;
+import awards.raspberry.golden.utils.ProducersUtils;
 import awards.raspberry.golden.vo.AwardWinner;
 import awards.raspberry.golden.vo.MovieInterval;
 import org.slf4j.Logger;
@@ -37,22 +38,29 @@ public class MovieService {
             return new MovieInterval();
         }
 
-        final Map<String, List<MovieEntity>> movieMap = new HashMap<>();
+        logger.info("Movies: " + movieEntityList.size());
+
+        final Map<String, List<Integer>> producersWinMap = new HashMap<>();
         for (MovieEntity movieEntity : movieEntityList) {
-            if (!movieMap.containsKey(movieEntity.getProducers())) {
-                movieMap.put(movieEntity.getProducers(), new ArrayList<>());
+
+            List<String> producers = ProducersUtils.getProducersList(movieEntity.getProducers());
+            for (String producer : producers) {
+                if (!producersWinMap.containsKey(producer)) {
+                    producersWinMap.put(producer, new ArrayList<>());
+                }
+
+                producersWinMap.get(producer).add(movieEntity.getYear());
             }
-            movieMap.get(movieEntity.getProducers()).add(movieEntity);
         }
 
-        logger.info("Movies: " + movieEntityList.size());
+        logger.info("Winners: " + producersWinMap.size());
 
         List<AwardWinner> awardWinners = new ArrayList<>();
 
-        for (Map.Entry<String, List<MovieEntity>> entry : movieMap.entrySet()) {
+        for (Map.Entry<String, List<Integer>> entry : producersWinMap.entrySet()) {
             final String producer = entry.getKey();
-            final List<MovieEntity> movieEntities = entry.getValue();
-            final int winCount = movieEntities.size();
+            final List<Integer> yearList = entry.getValue();
+            final int winCount = yearList.size();
 
             // Ignore producers that didn't won at least twice
             if (winCount < 2) {
@@ -63,23 +71,23 @@ public class MovieService {
             movieEntityList.sort(Comparator.comparing(MovieEntity::getYear));
 
             // Min
-            MovieEntity min1 = movieEntities.get(0);
-            MovieEntity min2 = movieEntities.get(1);
+            Integer min1 = yearList.get(0);
+            Integer min2 = yearList.get(1);
             AwardWinner awardWinnerMin = new AwardWinner();
             awardWinnerMin.setProducer(producer);
-            awardWinnerMin.setInterval(min2.getYear() - min1.getYear());
-            awardWinnerMin.setPreviousWin(min1.getYear());
-            awardWinnerMin.setFollowingWin(min2.getYear());
+            awardWinnerMin.setInterval(min2 - min1);
+            awardWinnerMin.setPreviousWin(min1);
+            awardWinnerMin.setFollowingWin(min2);
             awardWinners.add(awardWinnerMin);
 
             // Max
-            MovieEntity max1 = movieEntities.get(winCount-2);
-            MovieEntity max2 = movieEntities.get(winCount-1);
+            Integer max1 = yearList.get(winCount-2);
+            Integer max2 = yearList.get(winCount-1);
             AwardWinner awardWinnerMax = new AwardWinner();
             awardWinnerMax.setProducer(producer);
-            awardWinnerMax.setInterval(max2.getYear() - max1.getYear());
-            awardWinnerMax.setPreviousWin(max1.getYear());
-            awardWinnerMax.setFollowingWin(max2.getYear());
+            awardWinnerMax.setInterval(max2 - max1);
+            awardWinnerMax.setPreviousWin(max1);
+            awardWinnerMax.setFollowingWin(max2);
             awardWinners.add(awardWinnerMax);
         }
 
@@ -98,7 +106,11 @@ public class MovieService {
             mi.getMaxList().add(awardWinners.get(awardWinners.size() - 1));
         }
         if (awardWinners.size() > 1) {
-            mi.getMaxList().add(awardWinners.get(awardWinners.size() - 2));
+            // Avoid duplication
+            AwardWinner win = awardWinners.get(awardWinners.size() - 2);
+            if (!mi.getMaxList().contains(win)) {
+                mi.getMaxList().add(win);
+            }
         }
 
         // e o que obteve dois prêmios mais rápido
@@ -106,7 +118,11 @@ public class MovieService {
             mi.getMinList().add(awardWinners.get(0));
         }
         if (awardWinners.size() > 1) {
-            mi.getMinList().add(awardWinners.get(1));
+            // Avoid duplication
+            AwardWinner win = awardWinners.get(1);
+            if (!mi.getMinList().contains(win)) {
+                mi.getMinList().add(win);
+            }
         }
 
         return mi;
